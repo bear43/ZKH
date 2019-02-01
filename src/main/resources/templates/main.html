@@ -37,27 +37,58 @@
 <div class="container">
     <h1 th:inline="text">Здравствуйте [[${user.firstname}]]!</h1>
     <div th:if="${meters} != null">
-        <table class="table">
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Тип</th>
-                    <th>Значение</th>
-                    <th>Цена за единицу</th>
-                    <th>Итоговая цена</th>
+                    <th class="col-md-3">Тип</th>
+                    <th class="col-md-3">Значение</th>
+                    <th class="col-md-3">Цена за единицу</th>
+                    <th class="col-md-3">Итоговая цена</th>
                 </tr>
             </thead>
             <tbody>
                 <th:block th:each="meter : ${meters}">
                     <tr>
-                        <td th:text="${meter.getType()}">Type: </td>
-                        <td th:text="${meter.getValue()}">Type: </td>
-                        <td th:text="${meter.getCost()}">Type: </td>
-                        <td th:text="${meter.getTotalCost()}">Type: </td>
+                        <td class="col-md-3 meter_type" id="1" th:text="${meter.getType()}">fType: </td>
+                        <td class="col-md-3" th:text="${meter.getValue()}">Type: </td>
+                        <td class="col-md-3" th:text="${meter.getCost()}">Type: </td>
+                        <td class="col-md-3" th:text="${meter.getTotalCost()}">Type: </td>
                     </tr>
                 </th:block>
             </tbody>
         </table>
     </div>
 </div>
+<script>
+    $(function ()
+    {
+        $('td').click(function (e)
+        { //ловим элемент, по которому кликнули
+            var t = e.target || e.srcElement; //получаем название тега
+            var elm_name = t.tagName.toLowerCase(); //если это инпут - ничего не делаем
+            if (elm_name == 'input')
+            {
+                return false;
+            }
+            var val = $(this).html();
+            var code = '<input type="edit" id="edit" value="' + val + '" />';
+            $(this).empty().append(code);
+            var obj = $("#edit");
+            obj.focus();
+            obj.blur(function ()
+            {
+                var val = $(this).val();
+                $(this).parent().empty().html(val);
+            });
+        });
+    });
+    $(window).keydown(function (event)
+    { //ловим событие нажатия клавиши
+        if (event.keyCode == 13)
+        { //если это Enter
+            $('#edit').blur(); //снимаем фокус с поля ввода
+        }
+    });
+</script>
 </body>
 </html>
