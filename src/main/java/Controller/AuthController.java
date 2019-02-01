@@ -48,8 +48,18 @@ public class AuthController
         {
             if(userRepository.findByName(user.getName()) != null)
             {
-                model.put("message", "Пользователь с таким ником уже зарегистрированн!");
+                model.put("message", "Пользователь с таким логином уже зарегистрированн!");
                 return "registration";
+            }
+            else if(user.getPassword().isEmpty())
+            {
+                model.put("message", "Пароль не может быть пустым!");
+                return "registration";
+            }
+            else if(user.getName().isEmpty())
+            {
+                model.put("message", "Имя не может быть пустым!");
+                return registration();
             }
             else
             {
@@ -80,11 +90,16 @@ public class AuthController
     {
         if(!newpassword.equals(againpassword))
         {
-            model.put("message","Новый пароль и его подтверждения не совпадают!");
+            model.put("message","Новый пароль и его подтверждение не совпадают!");
             return "user_cabinet";
         }
         else
         {
+            if (newpassword.isEmpty())
+            {
+                model.put("message", "Новый пароль не может быть пустым!");
+                return "user_cabinet";
+            }
             try
             {
                 user = MainController.checkUser(user, userRepository);

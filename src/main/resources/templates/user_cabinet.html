@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
-<HTML>
 <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- Optional theme -->
@@ -9,16 +8,25 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
+    <title>Главная страница</title>
 </head>
 <body>
 <nav class="navbar navbar-default">
     <div class="container-fluid">
+        <li class="navbar-brand"><a href="/">ЖКХ</a></li>
         <div>
-            <ul class="nav navbar-nav">
-                <li class="navbar-btn"><a href="/">Главная страница</a></li>
+            <ul class="nav navbar-nav navbar-right">
+                <form id="log_out_form" th:action="@{/logout}" method="post">
+                </form>
+                <li class="navbar-link"><a href="#" id="log_out">Выйти</a></li>
+                <script>
+                    $("#log_out").on("click", function ()
+                    {
+                        $("#log_out_form").submit();
+                    });
+                </script>
             </ul>
         </div>
     </div>
@@ -30,10 +38,10 @@
         <h1>Смена пароля</h1>
         <form th:action="@{/pass_change}" method="post">
             <div class="form-group">
-                <input class="form-control" type="text" name="newpassword" placeholder="Новый пароль"/>
+                <input class="form-control" type="text" name="newpassword" required placeholder="Новый пароль"/>
             </div>
             <div class="form-group">
-                <input class="form-control" type="text" name="againpassword" placeholder="Подтверждение пароля"/>
+                <input class="form-control" type="text" name="againpassword" required placeholder="Подтверждение пароля"/>
             </div>
             <div class="form-group">
                 <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
