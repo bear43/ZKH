@@ -217,4 +217,15 @@ public class User
     {
         this.meterSet = meterSet;
     }
+
+    public Meter getMeterByType(MeterType type) throws Exception
+    {
+        if(meterSet == null) throw new Exception("Attempt to search meter but meter set is null!");
+        for(Meter m : meterSet)
+        {
+            if(m.getType() == type)
+                return m;
+        }
+        throw new Exception("No such type " + type.toString() + "!");
+    }
 }

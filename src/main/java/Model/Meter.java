@@ -88,4 +88,11 @@ public class Meter
     {
         return value*cost;
     }
+
+    public void copy(Meter meter)
+    {
+        this.value = meter.value;
+        this.cost = meter.cost;
+        this.type = meter.type;
+    }
 }

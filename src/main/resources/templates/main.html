@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="ru">
 <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" />
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Главная страница</title>
 </head>
 <body>
@@ -36,6 +36,9 @@
 </nav>
 <div class="container">
     <h1 th:inline="text">Здравствуйте [[${user.firstname}]]!</h1>
+    <div th:if="${message} != null">
+        <label class="text-info">[[${message}]]</label>
+    </div>
     <div th:if="${meters} != null">
         <table class="table table-hover">
             <thead>
@@ -49,14 +52,19 @@
             <tbody>
                 <th:block th:each="meter : ${meters}">
                     <tr>
-                        <td class="col-md-3 meter_type" id="1" th:text="${meter.getType()}">fType: </td>
-                        <td class="col-md-3" th:text="${meter.getValue()}">Type: </td>
-                        <td class="col-md-3" th:text="${meter.getCost()}">Type: </td>
-                        <td class="col-md-3" th:text="${meter.getTotalCost()}">Type: </td>
+                        <td class="col-md-3 meter_type_field" id="1" th:text="${meter.getType()}">fType: </td>
+                        <td class="col-md-3 value_field" th:text="${meter.getValue()}">Type: </td>
+                        <td class="col-md-3 cost_field" th:text="${meter.getCost()}">Type: </td>
+                        <td class="col-md-3 total_cost_field" th:text="${meter.getTotalCost()}">Type: </td>
                     </tr>
                 </th:block>
             </tbody>
         </table>
+        <form id="update_data" th:action="@{/update}" method="post">
+            <input type="hidden" name="type" />
+            <input type="hidden" name="value" />
+            <input type="hidden" name="cost" />
+        </form>
     </div>
 </div>
 <script>
@@ -64,21 +72,37 @@
     {
         $('td').click(function (e)
         { //ловим элемент, по которому кликнули
+            if($(this).hasClass("meter_type_field")) return;
+            if($(this).hasClass("total_cost_field")) return;
             var t = e.target || e.srcElement; //получаем название тега
             var elm_name = t.tagName.toLowerCase(); //если это инпут - ничего не делаем
             if (elm_name == 'input')
             {
                 return false;
             }
-            var val = $(this).html();
-            var code = '<input type="edit" id="edit" value="' + val + '" />';
+            var code = '<input type="edit" id="edit" value="' + $(this).html() + '" />';
             $(this).empty().append(code);
             var obj = $("#edit");
             obj.focus();
             obj.blur(function ()
             {
                 var val = $(this).val();
-                $(this).parent().empty().html(val);
+                var p = $(this).parent();
+                p.empty().html(val);
+                var meter_type = p.siblings(".meter_type_field").html();
+                var value_field = p.parent().children(".value_field").html();
+                var cost_field = p.parent().children(".cost_field").html();
+                p.parent().children(".total_cost_field").html(value_field*cost_field);
+                var form = $("#update_data");
+                form.find("input[name='type']").val(meter_type);
+                form.find("input[name='value']").val(value_field);
+                form.find("input[name='cost']").val(cost_field);
+                $.ajax(
+                    {
+                    type: "POST",
+                    url: form.attr("action"),
+                    data: form.serialize()
+                });
             });
         });
     });

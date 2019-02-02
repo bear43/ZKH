@@ -1,5 +1,7 @@
 package Controller;
 
+import Model.Meter;
+import Model.MeterType;
 import Model.User;
 import Repository.MeterRepository;
 import Repository.UserRepository;
@@ -7,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Map;
 
@@ -28,6 +32,23 @@ public class MainController
         model.put("user", user);
         model.put("meters", user.getMeterSet());
         return "main";
+    }
+
+    @PostMapping("/update")
+    public String update(String type, String value, String cost, Map<String, Object> model)
+    {
+        try
+        {
+            Meter in = new Meter(MeterType.valueOf(type), Double.parseDouble(value), Double.parseDouble(cost), null);
+            Meter m = user.getMeterByType(in.getType());
+            m.copy(in);
+            meterRepository.saveAndFlush(m);
+        }
+        catch(Exception ex)
+        {
+            model.put("message", "Ошибка: " + ex.getLocalizedMessage());
+        }
+        return "redirect:/";
     }
 
     public static User checkUser(User user, UserRepository userRepository) throws Exception
