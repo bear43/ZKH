@@ -4,6 +4,8 @@ import Repository.MeterRepository;
 import Repository.UserRepository;
 
 import javax.persistence.*;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +35,10 @@ public class User
 
     private String number;
 
+    private Date notificationDate;
+
+    private boolean numberActivated;
+
     @OneToMany(mappedBy = "user")
     private Set<Meter> meterSet;
 
@@ -49,6 +55,7 @@ public class User
         this.patronymic = patronymic;
         this.address = address;
         this.number = number;
+        //this.notificationDate = Date.valueOf(LocalDate.now());//TODO delete it and add null check
         meterSet = new HashSet<>();
         for(MeterType type : MeterType.values())
         {
@@ -66,6 +73,7 @@ public class User
         this.patronymic = patronymic;
         this.address = address;
         this.number = number;
+        //this.notificationDate = Date.valueOf(LocalDate.now());//TODO delete it and add null check
         meterSet = new HashSet<>();
         userRepository.saveAndFlush(this);
         Meter meter;
@@ -205,6 +213,13 @@ public class User
 
     public void setNumber(String number)
     {
+        setNumber(number, false);
+    }
+
+    public void setNumber(String number, boolean forced)
+    {
+        if(!forced)
+            number = normalizeNumber(number);
         this.number = number;
     }
 
@@ -227,5 +242,65 @@ public class User
                 return m;
         }
         throw new Exception("No such type " + type.toString() + "!");
+    }
+
+    public Date getNotificationDate()
+    {
+        return notificationDate;
+    }
+
+    public void setNotificationDate(Date notificationDate)
+    {
+        this.notificationDate = notificationDate;
+    }
+
+    public void setNotificationDate(LocalDate date)
+    {
+        setNotificationDate(Date.valueOf(date));
+    }
+
+    public boolean isNotificationData(Date date)
+    {
+        return notificationDate != null && notificationDate.equals(date);
+    }
+
+    public boolean isNotificationDate(LocalDate date)
+    {
+        return isNotificationData(java.sql.Date.valueOf(date));
+    }
+
+    public boolean isNotificationDateNow()
+    {
+        return isNotificationDate(LocalDate.now());
+    }
+
+    public void setNotificationDatePlus(LocalDate date, int monthCount)
+    {
+        setNotificationDate(date.plusMonths(monthCount));
+    }
+
+    public void setNotificationDatePlusMonth(LocalDate date)
+    {
+        setNotificationDatePlus(date, 1);
+    }
+
+    public void setNotificationDateNowPlusMonth()
+    {
+        setNotificationDatePlusMonth(LocalDate.now());
+    }
+
+    public boolean isNumberActivated()
+    {
+        return numberActivated;
+    }
+
+    public void setNumberActivated(boolean numberActivated)
+    {
+        this.numberActivated = numberActivated;
+    }
+
+    public static String normalizeNumber(String number)
+    {
+        return (number.charAt(0) == '7' || number.charAt(0) == '8') ? "+7" + number.substring(1) : number;
     }
 }

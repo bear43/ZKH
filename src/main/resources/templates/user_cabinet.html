@@ -15,7 +15,9 @@
 <body>
 <nav class="navbar navbar-default">
     <div class="container-fluid">
-        <li class="navbar-brand"><a href="/">ЖКХ</a></li>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">ЖКХ</a>
+        </div>
         <div>
             <ul class="nav navbar-nav navbar-right">
                 <form id="log_out_form" th:action="@{/logout}" method="post">
@@ -35,18 +37,59 @@
         <div th:if="${message} != null">
             [[${message}]]
         </div>
+        <div id="regexp">
+            <label id="regexp-text" class="text-danger"></label>
+        </div>
         <h1>Смена пароля</h1>
         <form th:action="@{/pass_change}" method="post">
             <div class="form-group">
-                <input class="form-control" type="text" name="newpassword" required placeholder="Новый пароль"/>
+                <input class="form-control" type="password" name="newpassword" required placeholder="Новый пароль"/>
             </div>
             <div class="form-group">
-                <input class="form-control" type="text" name="againpassword" required placeholder="Подтверждение пароля"/>
+                <input class="form-control" type="password" name="againpassword" required placeholder="Подтверждение пароля"/>
             </div>
             <div class="form-group">
                 <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
             </div>
         </form>
+        <div th:if="${user} != null">
+            <div th:if="${user.isNumberActivated()}">
+                <h1>Смена телефонного номера</h1>
+                <form th:action="@{/number_change}" onsubmit="return check()" method="post">
+                    <div class="form-group">
+                        <input id="ph-numb" class="form-control" type="text" name="newnumber" placeholder="Новый номер"/>
+                    </div>
+                    <div class="form-group">
+                        <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
+                    </div>
+                </form>
+                <h1>Установка SMS уведомления</h1>
+            </div>
+            <div th:if="${!user.isNumberActivated()}">
+                <h1>Подтверждение телефона</h1>
+                <form th:action="@{/activate_mobile}" method="get">
+                    <div class="form-group">
+                        <input class="btn btn-primary" type="submit" value="Подтвердить">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+            function testInfo(phoneInput, re)
+            {
+                var OK = re.test(phoneInput);
+                if (!OK)
+                {
+                    $("#regexp-text").html(phoneInput + " не является телефонным номером!");
+                }
+                return OK;
+            }
+            function check()
+            {
+                var re = /^(7|8|\\+7)\d{10}$/;
+                return testInfo($("#ph-numb").val(), re);
+            }
+        </script>
     </div>
 </body>
 </html>

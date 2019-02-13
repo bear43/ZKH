@@ -20,31 +20,27 @@
         </div>
         <div>
             <ul class="nav navbar-nav">
-                <li class="navbar-link"><a href="/registration">Регистрация</a></li>
+                <li class="navbar-link"><a href="/user_cabinet">Личный кабинет</a></li>
+            </ul>
+            <form id="log_out_form" th:action="@{/logout}" method="post">
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="navbar-link"><a href="#" id="log_out">Выйти</a></li>
+                <script>
+                    $("#log_out").on("click", function ()
+                    {
+                        $("#log_out_form").submit();
+                    });
+                </script>
             </ul>
         </div>
     </div>
 </nav>
 <div class="container">
-    <div th:if="${param.error}">
-        <p class="text-danger">Неверные имя пользователя/пароль.</p>
-    </div>
-    <div th:if="${param.logout}">
-        <p class="text-success">Вы успешно вышли из аккаунта!</p>
-    </div>
-    <div th:if="${message} != null">
-        [[${message}]]
-    </div>
-    <form th:action="@{/login}" method="post">
-        <div class="form-group">
-            <input class="form-control" type="text" name="username" required placeholder="Имя пользователя"/>
-        </div>
-        <div class="form-group">
-            <input class="form-control" type="password" name="password" required placeholder="Пароль"/>
-        </div>
-        <div class="form-group">
-            <input class="btn btn-primary center-block" type="submit" value="Войти"/>
-        </div>
+    <form th:action="@{/activate_mobile}" method="post">
+        <p class="text-info">Вам на телефон [[${user.getNumber()}]] было отправлено сообщение с кодом активации.</p>
+        <input type="text" name="code" placeholder="Код подтверждения"/>
+        <input class="btn btn-primary center-block" type="submit" value="Подтвердить"/>
     </form>
 </div>
 </body>

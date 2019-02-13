@@ -8,8 +8,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Controller
 public class AuthController
@@ -42,10 +45,11 @@ public class AuthController
     }
 
     @PostMapping("/registration")
-    public String registration(User user, Map<String, Object> model)
+    public String registration(User user, Map<String, Object> model, RedirectAttributes attr)
     {
         if(user != null)
         {
+            Pattern p = Pattern.compile("^(7|8|\\\\+7)\\d{10}$");
             if(userRepository.findByName(user.getName()) != null)
             {
                 model.put("message", "Пользователь с таким логином уже зарегистрированн!");
@@ -59,23 +63,49 @@ public class AuthController
             else if(user.getName().isEmpty())
             {
                 model.put("message", "Имя не может быть пустым!");
-                return registration();
+                return "registration";
             }
             else
             {
-                user.setActive(true);
-                user.setAuthority(0);
-                new User(user, userRepository, meterRepository);
-                model.put("message", "Пользователь успешно зарегистрирован!");
-                return "login";
+                Matcher m = p.matcher(user.getNumber());
+                if(m.matches())
+                {
+                    /*String number = user.getNumber();
+                    if(number.charAt(0) == '7' || number.charAt(0) == '8')
+                        user.setNumber("+7" + number.substring(1));*/
+                    user.setNumber(user.getNumber());
+                    user.setActive(true);
+                    user.setAuthority(0);
+                    new User(user, userRepository, meterRepository);
+                    attr.addFlashAttribute("message", "Пользователь успешно зарегистрирован!");
+                    return "redirect:/login";
+                }
+                else
+                {
+                    model.put("message", "Введен неверный номер телефона!");
+                    return "registration";
+                }
             }
         }
         return "registration";
     }
 
     @GetMapping("/user_cabinet")
-    public String user_cabinet()
+    public String user_cabinet(Map<String, Object> model, RedirectAttributes attr)
     {
+        try
+        {
+            user = MainController.checkUser(user, userRepository, true);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            model.put("message", "Произошла ошибка! Ваш аккаунт отсутствует в базе данных, пожалуйста, перезайдите");
+            return "user_cabinet";
+        }
+        model.putIfAbsent("user", user);
+        if(!user.isNumberActivated())
+            model.putIfAbsent("message", "Номер не подтвержден!");
         return "user_cabinet";
     }
 
@@ -86,33 +116,33 @@ public class AuthController
     }
 
     @PostMapping("/pass_change")
-    public String pass_change(String newpassword, String againpassword, Map<String, Object> model)
+    public String pass_change(String newpassword, String againpassword, Map<String, Object> model, RedirectAttributes attr)
     {
         if(!newpassword.equals(againpassword))
         {
-            model.put("message","Новый пароль и его подтверждение не совпадают!");
-            return "user_cabinet";
+            attr.addFlashAttribute("message","Новый пароль и его подтверждение не совпадают!");
+            return "redirect:/user_cabinet";
         }
         else
         {
             if (newpassword.isEmpty())
             {
-                model.put("message", "Новый пароль не может быть пустым!");
-                return "user_cabinet";
+                attr.addFlashAttribute("message", "Новый пароль не может быть пустым!");
+                return "redirect:/user_cabinet";
             }
             try
             {
-                user = MainController.checkUser(user, userRepository);
+                user = MainController.checkUser(user, userRepository, true);
             }
             catch (Exception ex)
             {
-                model.put("message", "Произошла внутрення ошибка!");
-                return "user_cabinet";
+                attr.addFlashAttribute("message", "Произошла внутрення ошибка!");
+                return "redirect:/user_cabinet";
             }
             user.setPassword(newpassword);
             userRepository.saveAndFlush(user);
-            model.put("message", "Пароль успешно изменен!");
-            return "user_cabinet";
+            attr.addFlashAttribute("message", "Пароль успешно изменен!");
+            return "redirect:/user_cabinet";
         }
     }
 

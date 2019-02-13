@@ -15,7 +15,9 @@
 <body>
 <nav class="navbar navbar-default">
     <div class="container-fluid">
-        <li class="navbar-brand"><a href="/">ЖКХ</a></li>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">ЖКХ</a>
+        </div>
         <div>
             <ul class="nav navbar-nav">
                 <li class="navbar-link"><a href="/user_cabinet">Личный кабинет</a></li>
@@ -53,9 +55,9 @@
                 <th:block th:each="meter : ${meters}">
                     <tr>
                         <td class="col-md-3 meter_type_field" id="1" th:text="${meter.getType()}">fType: </td>
-                        <td class="col-md-3 value_field" th:text="${meter.getValue()}">Type: </td>
-                        <td class="col-md-3 cost_field" th:text="${meter.getCost()}">Type: </td>
-                        <td class="col-md-3 total_cost_field" th:text="${meter.getTotalCost()}">Type: </td>
+                        <td class="col-md-3 value_field" th:text="${meter.getValue()}">0</td>
+                        <td class="col-md-3 cost_field" th:text="${meter.getCost()}">0</td>
+                        <td class="col-md-3 total_cost_field" th:text="${meter.getTotalCost()}">0</td>
                     </tr>
                 </th:block>
             </tbody>
@@ -80,14 +82,21 @@
             {
                 return false;
             }
-            var code = '<input type="edit" id="edit" value="' + $(this).html() + '" />';
+            var oldValue = $(this).html();
+            var code = '<input type="edit" id="edit" value="' + oldValue + '" />';
             $(this).empty().append(code);
             var obj = $("#edit");
             obj.focus();
             obj.blur(function ()
             {
-                var val = $(this).val();
+                var val = parseFloat($(this).val());
                 var p = $(this).parent();
+                if(isNaN(val))
+                {
+                    alert("Значение должно быть числом!");
+                    p.empty().html(oldValue);
+                    return;
+                }
                 p.empty().html(val);
                 var meter_type = p.siblings(".meter_type_field").html();
                 var value_field = p.parent().children(".value_field").html();
