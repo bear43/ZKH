@@ -5,9 +5,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap.datepicker-fork/1.3.0/js/locales/bootstrap-datepicker.ru.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Главная страница</title>
@@ -33,47 +36,73 @@
         </div>
     </div>
 </nav>
-    <div class="container">
-        <div th:if="${message} != null">
-            [[${message}]]
+<div class="container">
+    <div th:if="${message} != null">
+        [[${message}]]
+    </div>
+    <div id="regexp">
+        <label id="regexp-text" class="text-danger"></label>
+    </div>
+    <h1>Смена пароля</h1>
+    <form th:action="@{/pass_change}" method="post">
+        <div class="form-group">
+            <input class="form-control" type="password" name="newpassword" required placeholder="Новый пароль"/>
         </div>
-        <div id="regexp">
-            <label id="regexp-text" class="text-danger"></label>
+        <div class="form-group">
+            <input class="form-control" type="password" name="againpassword" required placeholder="Подтверждение пароля"/>
         </div>
-        <h1>Смена пароля</h1>
-        <form th:action="@{/pass_change}" method="post">
-            <div class="form-group">
-                <input class="form-control" type="password" name="newpassword" required placeholder="Новый пароль"/>
-            </div>
-            <div class="form-group">
-                <input class="form-control" type="password" name="againpassword" required placeholder="Подтверждение пароля"/>
-            </div>
-            <div class="form-group">
-                <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
-            </div>
-        </form>
-        <div th:if="${user} != null">
-            <div th:if="${user.isNumberActivated()}">
-                <h1>Смена телефонного номера</h1>
-                <form th:action="@{/number_change}" onsubmit="return check()" method="post">
-                    <div class="form-group">
-                        <input id="ph-numb" class="form-control" type="text" name="newnumber" placeholder="Новый номер"/>
-                    </div>
-                    <div class="form-group">
-                        <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
-                    </div>
-                </form>
+        <div class="form-group">
+            <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
+        </div>
+    </form>
+    <div th:if="${user} != null">
+        <div th:if="${user.isNumberActivated()}">
+            <h1>Смена телефонного номера</h1>
+            <form th:action="@{/number_change}" onsubmit="return check()" method="post">
+                <div class="form-group">
+                    <input id="ph-numb" class="form-control" type="text" name="newnumber" placeholder="Новый номер"/>
+                </div>
+                <div class="form-group">
+                    <input class="btn btn-primary center-block" type="submit" value="Изменить"/>
+                </div>
+            </form>
+            <div th:if="${user.getNotificationDate()} == null">
                 <h1>Установка SMS уведомления</h1>
+                <div class="col-md-2">
+                    <form id="setnot" th:action="@{/set_notification}" method="post">
+                        <div id="datepicker" class="input-group date" data-date-format="dd-mm-yyyy">
+                            <input class="form-control" type="text" name="date" readonly />
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                        </div>
+                        <br/>
+                        <label>Обновлять ежемесячно: <input class="form-control" type="checkbox" name="repeat" /></label>
+                        <input class="btn btn-primary" type="submit" value="Установить"/>
+                    </form>
+                </div>
             </div>
-            <div th:if="${!user.isNumberActivated()}">
-                <h1>Подтверждение телефона</h1>
-                <form th:action="@{/activate_mobile}" method="get">
-                    <div class="form-group">
-                        <input class="btn btn-primary" type="submit" value="Подтвердить">
-                    </div>
+            <div th:if="${user.getNotificationDate()} != null">
+                <label>У вас установлено уведомление на [[${user.getNotificationDate()}]]</label>
+                <div th:if="${user.isAutoContinue()}">
+                    <label>Автопродление включено</label>
+                </div>
+                <div th:if="${!user.isAutoContinue()}">
+                    <label>Автопродление отключено</label>
+                </div>
+                <form th:action="@{/drop_notification}" method="get">
+                    <input class="btn btn-primary" type="submit" value="Отключить"/>
                 </form>
             </div>
         </div>
+        <div th:if="${!user.isNumberActivated()}">
+            <h1>Подтверждение телефона</h1>
+            <form th:action="@{/activate_mobile}" method="get">
+                <div class="form-group">
+                    <input class="btn btn-primary" type="submit" value="Подтвердить">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
         <script>
             function testInfo(phoneInput, re)
             {
@@ -89,7 +118,24 @@
                 var re = /^(7|8|\\+7)\d{10}$/;
                 return testInfo($("#ph-numb").val(), re);
             }
+            $(function () {
+                $("#datepicker").datepicker({
+                    autoclose: true,
+                    todayHighlight: true,
+                    language: 'ru',
+                    locale: 'ru'
+                }).datepicker('update', new Date());
+            });
+            var form = $("#setnot");
+            form.submit(function (event)
+            {
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: form.attr("action"),
+                        data: form.serialize()
+                    });
+            });
         </script>
-    </div>
 </body>
 </html>

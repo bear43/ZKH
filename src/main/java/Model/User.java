@@ -39,6 +39,8 @@ public class User
 
     private boolean numberActivated;
 
+    private boolean autoContinue;
+
     @OneToMany(mappedBy = "user")
     private Set<Meter> meterSet;
 
@@ -299,8 +301,23 @@ public class User
         this.numberActivated = numberActivated;
     }
 
+    public void resetNotificationDate()
+    {
+        this.notificationDate = null;
+    }
+
     public static String normalizeNumber(String number)
     {
         return (number.charAt(0) == '7' || number.charAt(0) == '8') ? "+7" + number.substring(1) : number;
+    }
+
+    public boolean isAutoContinue()
+    {
+        return autoContinue;
+    }
+
+    public void setAutoContinue(boolean autoContinue)
+    {
+        this.autoContinue = autoContinue;
     }
 }

@@ -59,6 +59,11 @@ public class NotificationChecker
                     try
                     {
                         Messenger.sendMessage(user.getNumber(), NOTIFICATION_MESSAGE);
+                        if(user.isAutoContinue())
+                            user.setNotificationDatePlusMonth(user.getNotificationDate().toLocalDate());
+                        else
+                            user.resetNotificationDate();
+                        userRepository.saveAndFlush(user);
                     } catch (Exception ex)
                     {
                         ex.printStackTrace();

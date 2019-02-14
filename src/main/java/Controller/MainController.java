@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
 
@@ -30,6 +34,8 @@ public class MainController
     private User user;
 
     private int activationCode = -1;
+
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @GetMapping("/")
     public String main(Map<String, Object> model) throws Exception
@@ -159,6 +165,52 @@ public class MainController
         user.setNumberActivated(false);
         userRepository.saveAndFlush(user);
         attr.addFlashAttribute("message", "Номер успешно изменен! Теперь его необходимо активировать.");
+        return "redirect:/user_cabinet";
+    }
+
+    @PostMapping("/set_notification")
+    public String set_notification(String date, String repeat, Map<String, Object> model, RedirectAttributes attr)
+    {
+        if(date != null)
+        {
+            String msg = checkUser(true);
+            if(msg == null)
+            {
+                try
+                {
+                    user.setNotificationDate(LocalDate.parse(date, dtf));
+                    user.setAutoContinue(repeat.equals("on"));
+                    userRepository.saveAndFlush(user);
+                    attr.addFlashAttribute("message", "Уведомление успешно включено!");
+                }
+                catch (Exception ex)
+                {
+                    attr.addFlashAttribute("message", "Произошла ошибка при распознавании даты");
+                    return "redirect:/user_cabinet";
+                }
+            }
+            else
+            {
+                attr.addFlashAttribute("message", msg);
+            }
+        }
+        return "redirect:/user_cabinet";
+    }
+
+    @GetMapping("/drop_notification")
+    public String drop_notification(RedirectAttributes attr)
+    {
+        String msg = checkUser(true);
+        if(msg == null)
+        {
+            user.resetNotificationDate();
+            userRepository.saveAndFlush(user);
+            attr.addFlashAttribute("message", "Уведомление успешно сброшено!");
+        }
+        else
+        {
+            attr.addFlashAttribute("message", msg);
+        }
         return "redirect:/user_cabinet";
     }
 
