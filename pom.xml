@@ -84,13 +84,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <includes>
-                    <include>src/main/resources/templates/m.js</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 
 </project>

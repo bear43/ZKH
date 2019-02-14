@@ -49,7 +49,7 @@ public class AuthController
     {
         if(user != null)
         {
-            Pattern p = Pattern.compile("^(7|8|\\\\+7)\\d{10}$");
+            Pattern p = Pattern.compile("^(7|8|\\+7)\\d{10}$");
             if(userRepository.findByName(user.getName()) != null)
             {
                 model.put("message", "Пользователь с таким логином уже зарегистрированн!");
