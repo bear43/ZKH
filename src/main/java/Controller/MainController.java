@@ -31,7 +31,7 @@ public class MainController
     @Autowired
     private MeterRepository meterRepository;
 
-    private User user;
+    private User user = null;
 
     private int activationCode = -1;
 
@@ -68,7 +68,7 @@ public class MainController
         if(user != null)
         {
             if (update)
-                user = userRepository.getOne(user.getId());
+                user = userRepository.findByName(SecurityContextHolder.getContext().getAuthentication().getName());
             return user;
         }
         User u = userRepository.findByName(SecurityContextHolder.getContext().getAuthentication().getName());
