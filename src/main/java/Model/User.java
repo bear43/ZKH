@@ -1,7 +1,7 @@
 package Model;
 
-import Repository.MeterRepository;
 import Repository.UserRepository;
+import Util.MeterType;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -41,15 +41,18 @@ public class User
 
     private boolean autoContinue;
 
-    @OneToMany(mappedBy = "user")
-    private Set<Meter> meterSet;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private Set<Meter> meterSet = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Payment> paymentSet = new HashSet<>();
 
     protected User()
     {
     }
 
     public User(String name, String password, boolean active, int authority,
-                String firstname, String secondname, String patronymic, String address, String number)
+                String firstname, String secondname, String patronymic, String address, String number) throws Exception
     {
         this(name, password, active, authority);
         this.firstname = firstname;
@@ -57,17 +60,12 @@ public class User
         this.patronymic = patronymic;
         this.address = address;
         this.number = number;
-        //this.notificationDate = Date.valueOf(LocalDate.now());//TODO delete it and add null check
-        meterSet = new HashSet<>();
-        for(MeterType type : MeterType.values())
-        {
-            meterSet.add(new Meter(type, 0.0, 0.0, this));
-        }
+        resetMeters();
     }
 
     public User(String name, String password, boolean active, int authority,
                 String firstname, String secondname, String patronymic,
-                String address, String number, UserRepository userRepository, MeterRepository meterRepository)
+                String address, String number, UserRepository userRepository) throws Exception
     {
         this(name, password, active, authority);
         this.firstname = firstname;
@@ -75,29 +73,21 @@ public class User
         this.patronymic = patronymic;
         this.address = address;
         this.number = number;
-        //this.notificationDate = Date.valueOf(LocalDate.now());//TODO delete it and add null check
-        meterSet = new HashSet<>();
+        resetMeters();
         userRepository.saveAndFlush(this);
-        Meter meter;
-        for(MeterType type : MeterType.values())
-        {
-            meter = new Meter(type, 0.0, 0.0, this);
-            meterSet.add(meter);
-            meterRepository.save(meter);
-        }
     }
 
-    public User(User user)
+    public User(User user) throws Exception
     {
         this(user.name, user.password, user.active, user.authority,
                 user.firstname, user.secondname, user.patronymic, user.address, user.number);
     }
 
-    public User(User user, UserRepository userRepository, MeterRepository meterRepository)
+    public User(User user, UserRepository userRepository) throws Exception
     {
         this(user.name, user.password, user.active, user.authority,
                 user.firstname, user.secondname, user.patronymic,
-                user.address, user.number, userRepository, meterRepository);
+                user.address, user.number, userRepository);
     }
 
     public User(String name, String password, boolean active, int authority)
@@ -116,6 +106,32 @@ public class User
     public User(String name, String password)
     {
         this(name, password, true);
+    }
+
+    public void resetMeters() throws Exception
+    {
+        if(meterSet == null) throw new Exception("User's meter set is null! Initialize it before do smth with it");
+        if(meterSet.isEmpty())
+        {
+            for(MeterType type : MeterType.values())
+                meterSet.add(new Meter(type, 0.0, 0.0, this));
+        }
+        else
+        {
+            for (Meter meter : meterSet)
+            {
+                meter.setValue(0.0);
+                meter.setCost(0.0);
+            }
+        }
+    }
+
+    public void createPayments() throws Exception
+    {
+        if(meterSet == null) throw new Exception("User's meter set is null! Initialize it before do smth with it");
+        if(paymentSet == null) throw new Exception("User's payment set is null! Initialize it before do smth with it");
+        paymentSet.add(new Payment(meterSet, this));
+
     }
 
     public Long getId()
@@ -246,6 +262,11 @@ public class User
         throw new Exception("No such type " + type.toString() + "!");
     }
 
+    public Meter getMeterByEnumTitle(String title) throws Exception
+    {
+        return getMeterByType(MeterType.getTypeByTitle(title));
+    }
+
     public Date getNotificationDate()
     {
         return notificationDate;
@@ -319,5 +340,15 @@ public class User
     public void setAutoContinue(boolean autoContinue)
     {
         this.autoContinue = autoContinue;
+    }
+
+    public Set<Payment> getPaymentSet()
+    {
+        return paymentSet;
+    }
+
+    public void setPaymentSet(Set<Payment> paymentSet)
+    {
+        this.paymentSet = paymentSet;
     }
 }

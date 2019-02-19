@@ -10,10 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApplicationStartupRunner implements CommandLineRunner
 {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private NotificationChecker notificationChecker;
+
+    @Autowired
+    public ApplicationStartupRunner(UserRepository userRepository)
+    {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public void run(String... args) throws Exception

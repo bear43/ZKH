@@ -17,13 +17,18 @@ import java.util.regex.Pattern;
 @Controller
 public class AuthController
 {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MeterRepository meterRepository;
+    private final MeterRepository meterRepository;
 
     private User user;
+
+    @Autowired
+    public AuthController(UserRepository userRepository, MeterRepository meterRepository)
+    {
+        this.userRepository = userRepository;
+        this.meterRepository = meterRepository;
+    }
 
     @GetMapping("/login")
     public String login()
@@ -70,13 +75,18 @@ public class AuthController
                 Matcher m = p.matcher(user.getNumber());
                 if(m.matches())
                 {
-                    /*String number = user.getNumber();
-                    if(number.charAt(0) == '7' || number.charAt(0) == '8')
-                        user.setNumber("+7" + number.substring(1));*/
                     user.setNumber(user.getNumber());
                     user.setActive(true);
                     user.setAuthority(0);
-                    new User(user, userRepository, meterRepository);
+                    try
+                    {
+                        new User(user, userRepository);
+                    }
+                    catch (Exception ex)
+                    {
+                        model.put("message", "Произошла ошибка при создании пользователя!");
+                        return "registration";
+                    }
                     attr.addFlashAttribute("message", "Пользователь успешно зарегистрирован!");
                     return "redirect:/login";
                 }

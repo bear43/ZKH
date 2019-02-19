@@ -21,6 +21,7 @@
         <div>
             <ul class="nav navbar-nav">
                 <li class="navbar-link"><a href="/user_cabinet">Личный кабинет</a></li>
+                <li class="navbar-link"><a href="/history">История</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <form id="log_out_form" th:action="@{/logout}" method="post">
@@ -52,16 +53,21 @@
                 </tr>
             </thead>
             <tbody>
-                <th:block th:each="meter : ${meters}">
+                <th:block th:each="meterSet : ${meters}">
                     <tr>
-                        <td class="col-md-3 meter_type_field" id="1" th:text="${meter.getType()}">fType: </td>
-                        <td class="col-md-3 value_field" th:text="${meter.getValue()}">0</td>
-                        <td class="col-md-3 cost_field" th:text="${meter.getCost()}">0</td>
-                        <td class="col-md-3 total_cost_field" th:text="${meter.getTotalCost()}">0</td>
+                        <td class="col-md-3 meter_type_field" id="1" th:text="${meterSet.getType()}">fType: </td>
+                        <td class="col-md-3 value_field" th:text="${meterSet.getValue()}">0</td>
+                        <td class="col-md-3 cost_field" th:text="${meterSet.getCost()}">0</td>
+                        <td class="col-md-3 total_cost_field" th:text="${meterSet.getTotalCost()}">0</td>
                     </tr>
                 </th:block>
             </tbody>
         </table>
+        <form th:action="@{/create_payment}" method="post">
+            <div class="form-group">
+                <input class="btn btn-primary center-block" type="submit" value="Подтвердить"/>
+            </div>
+        </form>
         <form id="update_data" th:action="@{/update}" method="post">
             <input type="hidden" name="type" />
             <input type="hidden" name="value" />

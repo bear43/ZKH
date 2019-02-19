@@ -1,9 +1,10 @@
 package Controller;
 
 import Model.Meter;
-import Model.MeterType;
+import Util.MeterType;
 import Model.User;
 import Repository.MeterRepository;
+import Repository.PaymentRepository;
 import Repository.UserRepository;
 import Util.Messenger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -25,17 +22,25 @@ import java.util.Random;
 @Controller
 public class MainController
 {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private MeterRepository meterRepository;
+    private final MeterRepository meterRepository;
+
+    private final PaymentRepository paymentRepository;
 
     private User user = null;
 
     private int activationCode = -1;
 
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+    @Autowired
+    public MainController(UserRepository userRepository, MeterRepository meterRepository, PaymentRepository paymentRepository)
+    {
+        this.userRepository = userRepository;
+        this.meterRepository = meterRepository;
+        this.paymentRepository = paymentRepository;
+    }
 
     @GetMapping("/")
     public String main(Map<String, Object> model) throws Exception
@@ -47,18 +52,18 @@ public class MainController
     }
 
     @PostMapping("/update")
-    public String update(String type, String value, String cost, Map<String, Object> model)
+    public String update(String type, String value, String cost, Map<String, Object> model, RedirectAttributes attr)
     {
         try
         {
-            Meter in = new Meter(MeterType.valueOf(type), Double.parseDouble(value), Double.parseDouble(cost), null);
+            Meter in = new Meter(MeterType.getTypeByTitle(type), Double.parseDouble(value), Double.parseDouble(cost), null);
             Meter m = user.getMeterByType(in.getType());
             m.copy(in);
             meterRepository.saveAndFlush(m);
         }
         catch(Exception ex)
         {
-            model.put("message", "Ошибка: " + ex.getLocalizedMessage());
+            attr.addFlashAttribute("message", "Ошибка: " + ex.getLocalizedMessage());
         }
         return "redirect:/";
     }
@@ -212,6 +217,32 @@ public class MainController
             attr.addFlashAttribute("message", msg);
         }
         return "redirect:/user_cabinet";
+    }
+
+    @PostMapping("/create_payment")
+    public String create_payment(RedirectAttributes attr)
+    {
+        String msg = checkUser(true);
+        if(msg == null)
+        {
+            try
+            {
+                user.createPayments();
+                user.resetMeters();
+            }
+            catch (Exception ex)
+            {
+                attr.addFlashAttribute("message", "Произошла внутренняя ошибка при подтверждении!");
+                return "redirect:/";
+            }
+            userRepository.saveAndFlush(user);
+            attr.addFlashAttribute("message", "Оплата успешно подтверждена!");
+        }
+        else
+        {
+            attr.addFlashAttribute("message", msg);
+        }
+        return "redirect:/";
     }
 
 }

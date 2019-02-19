@@ -1,5 +1,7 @@
 package Model;
 
+import Util.MeterType;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -21,6 +23,9 @@ public class Meter
     @ManyToOne
     private User user;
 
+    @ManyToOne
+    private Payment payment;
+
     protected Meter()
     {
 
@@ -32,6 +37,15 @@ public class Meter
         this.value = value;
         this.cost = cost;
         this.user = user;
+    }
+
+    public Meter(Meter meter)
+    {
+        this.type = meter.type;
+        this.cost = meter.cost;
+        this.value = meter.value;
+        this.payment = meter.payment;
+        this.user = meter.user;
     }
 
     public Long getId()
@@ -94,5 +108,21 @@ public class Meter
         this.value = meter.value;
         this.cost = meter.cost;
         this.type = meter.type;
+    }
+
+    public Payment getPayment()
+    {
+        return payment;
+    }
+
+    public void setPayment(Payment payment)
+    {
+        this.payment = payment;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("Вид: %s, Значение: %f, Стоимость единицы: %f", type.toString(), value, cost);
     }
 }
