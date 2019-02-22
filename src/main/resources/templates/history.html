@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="ru">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" />
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Главная страница</title>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">ЖКХ</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li class="navbar-link"><a href="/user_cabinet">Личный кабинет</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <form id="log_out_form" th:action="@{/logout}" method="post">
+                </form>
+                <li class="navbar-link"><a href="#" id="log_out">Выйти</a></li>
+                <script>
+                    $("#log_out").on("click", function ()
+                    {
+                        $("#log_out_form").submit();
+                    });
+                </script>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <h1 th:inline="text">История платежей</h1>
+    <div th:if="${message} != null">
+        <label class="text-info">[[${message}]]</label>
+    </div>
+    <div th:if="${paymentSet} != null">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th class="col-md-3">Дата</th>
+                <th class="col-md-3">Тип</th>
+                <th class="col-md-3">Значение</th>
+                <th class="col-md-3">Цена за единицу</th>
+                <th class="col-md-3">Итоговая цена</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="payment : ${paymentSet}">
+                <th:block th:each="meter : ${payment.getMeterSet()}">
+                    <tr>
+                        <td class="col-md-3 date_field" th:text="${payment.getDate()}">Date</td>
+                        <td class="col-md-3 meter_type_field" th:text="${meter.getType()}">Type</td>
+                        <td class="col-md-3 value_field" th:text="${meter.getValue()}">0</td>
+                        <td class="col-md-3 cost_field" th:text="${meter.getCost()}">0</td>
+                        <td class="col-md-3 total_cost_field" th:text="${meter.getTotalCost()}">0</td>
+                    </tr>
+                </th:block>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

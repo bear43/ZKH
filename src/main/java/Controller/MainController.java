@@ -245,4 +245,20 @@ public class MainController
         return "redirect:/";
     }
 
+    @GetMapping("history")
+    public String histroy(Map<String, Object> model)
+    {
+        String msg = checkUser(true);
+        if(msg != null)
+        {
+            model.put("message", msg);
+        }
+        else
+        {
+            model.put("user", user);
+            model.put("paymentSet", user.getPaymentSet());
+        }
+        return "history";
+    }
+
 }
